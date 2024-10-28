@@ -14,6 +14,8 @@ public class CriteriaDto extends CommonDto<Long> {
     private String hasChild;
     private CriteriaDto criteriaParent;
     private Long criteriaParentId;
+    private String criteriaCode;
+
 //    private Set<CriteriaDto> children;
 
 

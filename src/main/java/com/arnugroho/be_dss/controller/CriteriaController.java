@@ -78,8 +78,9 @@ public class CriteriaController {
 
     @GetMapping("/uuid/{uuid}")
     public DefaultResponse<CriteriaDto> getByUuid(@PathVariable String uuid) {
-
-        return DefaultResponse.ok(criteriaService.findByUuid(uuid));
+        CriteriaDto dto = criteriaService.findByUuid(uuid);
+        dto.setStatusDelete(!dto.isStatusDelete());
+        return DefaultResponse.ok(dto);
     }
 
     @DeleteMapping("/uuid/{uuid}")

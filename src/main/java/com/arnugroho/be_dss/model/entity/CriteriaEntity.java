@@ -15,6 +15,8 @@ public class CriteriaEntity extends CommonModel {
 
     @Column(name = "criteria_name", unique = true, nullable = false)
     private String criteriaName;
+    @Column(name = "criteria_code", unique = true)
+    private String criteriaCode;
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     @Column(name = "criteria_weight")
