@@ -2,7 +2,6 @@ package com.arnugroho.be_dss.service.common;
 
 
 import com.arnugroho.be_dss.configuration.CommonException;
-import com.arnugroho.be_dss.configuration.security.UserDetailsImpl;
 import com.arnugroho.be_dss.mapper.common.CommonMapper;
 import com.arnugroho.be_dss.model.common.CommonDto;
 import com.arnugroho.be_dss.model.common.CommonModel;
@@ -22,8 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -262,33 +259,6 @@ public abstract class CommonBaseServiceImpl<T extends CommonModel, ID extends Se
         ((ObjectNode) filter).remove("pageSize");
 
         Specification<T> specification = extraSpecification(request.getFilter());
-
-        if (request.getFilter().has("nomenklatur")) {
-            String[] arrNo = request.getFilter().get("nomenklatur").asText().split("-");
-            if (arrNo.length == 2) {
-                try {
-                    ((ObjectNode) filter).put("id", Long.valueOf(arrNo[1]));
-                } catch (Exception e) {
-                    ((ObjectNode) filter).put("id", 0);
-                }
-            } else {
-                try {
-                    ((ObjectNode) filter).put("id", Long.valueOf(arrNo[0]));
-                } catch (Exception e) {
-                    if (!arrNo[0].isEmpty()) {
-                        ((ObjectNode) filter).put("id", 0);
-                    }
-                }
-            }
-            ((ObjectNode) filter).remove("nomenklatur");
-
-            specification = specification.and(createSpecification(CommonModel_.ID, arrNo[0], EQUALS));
-        }
-
-        if (filter.has("uuid")) {
-            specification = specification.and(createSpecification(CommonModel_.UUID, filter.get("uuid").asText(), EQUALS));
-        }
-
 
 
         Page<T> page = commonRepository.findAll(specification, pageable);

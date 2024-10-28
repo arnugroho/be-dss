@@ -9,6 +9,8 @@ import lombok.Setter;
 @Getter
 public class AlternativeDto extends CommonDto<Long> {
     private JsonNode dataValue;
+    private String alternativeName;
+    private String description;
 
 
 }
