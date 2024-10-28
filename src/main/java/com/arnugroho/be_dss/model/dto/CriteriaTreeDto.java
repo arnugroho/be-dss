@@ -9,14 +9,16 @@ import java.util.Set;
 @Setter
 @Getter
 public class CriteriaTreeDto extends CommonDto<Long> {
-    private String criteriaName;
-    private Double criteriaWeight;
-    private String criteriaType;
-    private String description;
-    private String hasChild;
+//    private String criteriaName;
+//    private Double criteriaWeight;
+//    private String criteriaType;
+//    private String description;
+//    private String hasChild;
 //    private CriteriaDto criteriaParent;
-    private Long criteriaParentId;
+//    private Long criteriaParentId;
     private Set<CriteriaTreeDto> children;
+    private String title;
+    private String key;
 
 
 

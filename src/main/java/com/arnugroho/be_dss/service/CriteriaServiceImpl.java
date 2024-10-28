@@ -7,6 +7,7 @@ import com.arnugroho.be_dss.model.common.PageableRequest;
 import com.arnugroho.be_dss.model.dto.CriteriaDto;
 import com.arnugroho.be_dss.model.dto.CriteriaTreeDto;
 import com.arnugroho.be_dss.model.entity.CriteriaEntity;
+import com.arnugroho.be_dss.model.entity.CriteriaEntity_;
 import com.arnugroho.be_dss.repository.CriteriaRepository;
 import com.arnugroho.be_dss.service.common.CommonBaseServiceImpl;
 import com.arnugroho.be_dss.utils.PageableUtil;
@@ -39,6 +40,7 @@ public class CriteriaServiceImpl extends CommonBaseServiceImpl<CriteriaEntity, L
     public Page<CriteriaTreeDto> findPagesTree(PageableRequest<CriteriaTreeDto> request) {
         Pageable pageable = PageableUtil.createPageableRequest(request);
         Specification<CriteriaEntity> specification = createDeleteStatusSpecification();
+        specification = specification.and((root, query, criteriaBuilder) -> criteriaBuilder.isNull(root.get(CriteriaEntity_.CRITERIA_PARENT)));
         Page<CriteriaEntity> productEntityPage;
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -47,25 +49,6 @@ public class CriteriaServiceImpl extends CommonBaseServiceImpl<CriteriaEntity, L
         CriteriaEntity entity = criteriaTreeMapper.fromDto(request.getFilter());
         JsonNode filter = objectMapper.valueToTree(entity);
 
-        if (request.getFilter().getNomenklatur() != null) {
-            String[] arrNo = request.getFilter().getNomenklatur().split("-");
-            if (arrNo.length == 2) {
-                try {
-                    ((ObjectNode) filter).put("id", Long.valueOf(arrNo[1]));
-                } catch (Exception e) {
-                    ((ObjectNode) filter).put("id", 0);
-                }
-            } else {
-                try {
-                    ((ObjectNode) filter).put("id", Long.valueOf(arrNo[0]));
-                } catch (Exception e) {
-                    if (!arrNo[0].isEmpty()) {
-                        ((ObjectNode) filter).put("id", 0);
-                    }
-                }
-            }
-        }
-        ((ObjectNode) filter).remove("nomenklatur");
         ((ObjectNode) filter).remove("statusDelete");
 
         Iterator<Map.Entry<String, JsonNode>> fields = filter.fields();
