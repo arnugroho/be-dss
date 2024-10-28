@@ -5,6 +5,7 @@ import com.arnugroho.be_dss.model.common.DefaultPageResponse;
 import com.arnugroho.be_dss.model.common.DefaultResponse;
 import com.arnugroho.be_dss.model.common.PageableRequest;
 import com.arnugroho.be_dss.model.dto.CriteriaDto;
+import com.arnugroho.be_dss.model.dto.CriteriaTreeDto;
 import com.arnugroho.be_dss.model.entity.CriteriaEntity;
 import com.arnugroho.be_dss.repository.CriteriaRepository;
 import com.arnugroho.be_dss.service.CriteriaService;
@@ -33,6 +34,14 @@ public class CriteriaController {
     @PostMapping("/paged")
     public DefaultPageResponse<List<CriteriaDto>> getPaged(@RequestBody PageableRequest<CriteriaDto> request) {
         Page<CriteriaDto> pagedData = criteriaService.findPages(request);
+        List<CriteriaDto> result = pagedData.getContent().stream().peek(criteriaDto -> criteriaDto.setStatusDelete(!criteriaDto.isStatusDelete())
+        ).toList();
+        return DefaultPageResponse.ok(result, pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
+    }
+
+    @PostMapping("/paged/tree")
+    public DefaultPageResponse<List<CriteriaTreeDto>> getPagedTree(@RequestBody PageableRequest<CriteriaTreeDto> request) {
+        Page<CriteriaTreeDto> pagedData = criteriaService.findPagesTree(request);
 
         return DefaultPageResponse.ok(pagedData.getContent(), pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
     }
@@ -42,12 +51,14 @@ public class CriteriaController {
 //        CategoryJournalDto categoryJournalDto = categoryJournalService.findByUuid(journalDto.getCategoryJournal().getUuid());
 //        journalDto.setCategoryJournalId(categoryJournalDto.getId());
 //        journalDto.setCategoryJournal(categoryJournalDto);
+        criteriaDto.setStatusDelete(!criteriaDto.isStatusDelete());
         criteriaService.save(criteriaDto);
         return DefaultResponse.ok();
     }
 
     @PutMapping()
     public DefaultResponse<String> update(@RequestBody CriteriaDto criteriaDto) {
+        criteriaDto.setStatusDelete(!criteriaDto.isStatusDelete());
         criteriaService.update(criteriaDto);
         return DefaultResponse.ok();
     }

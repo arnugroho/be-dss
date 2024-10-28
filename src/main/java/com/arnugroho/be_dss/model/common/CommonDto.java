@@ -23,4 +23,5 @@ public abstract class CommonDto<ID> {
     private ZonedDateTime modifiedOn;
     private String uuid;
     private String nomenklatur;
+    private boolean statusDelete;
 }

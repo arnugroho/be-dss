@@ -171,17 +171,26 @@ public abstract class CommonBaseServiceImpl<T extends CommonModel, ID extends Se
         return (root, query, criteriaBuilder) -> getDeleteStatusPredicate(root, criteriaBuilder);
     }
 
+    protected Specification<T> createNotNullSpecification() {
+        return (root, query, criteriaBuilder) -> getNotNullPredicate(root, criteriaBuilder);
+    }
+
     protected Predicate getDeleteStatusPredicate(Root<T> root, CriteriaBuilder criteriaBuilder) {
         Predicate predicateForStatusDeleteIsFalse = criteriaBuilder.isFalse(root.get(CommonModel_.statusDelete));
         Predicate predicateForStatusDeleteIsNull = criteriaBuilder.isNull(root.get(CommonModel_.statusDelete));
         return criteriaBuilder.or(predicateForStatusDeleteIsFalse, predicateForStatusDeleteIsNull);
     }
 
+    protected Predicate getNotNullPredicate(Root<T> root, CriteriaBuilder criteriaBuilder) {
+        Predicate predicateForStatusDeleteIsNotNull = criteriaBuilder.isNotNull(root.get(CommonModel_.statusDelete));
+        return criteriaBuilder.or(predicateForStatusDeleteIsNotNull);
+    }
+
     @Override
     public Page<DTO> findPages(PageableRequest<DTO> request) {
 
         Pageable pageable = PageableUtil.createPageableRequest(request);
-        Specification<T> specification = extraSpecification(request.getFilter());
+        Specification<T> specification = createNotNullSpecification();
         Page<T> productEntityPage;
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -233,8 +242,8 @@ public abstract class CommonBaseServiceImpl<T extends CommonModel, ID extends Se
                     value = jsonField.getValue().asText();
                 }
 
-                specification = specification.and(createSpecification(jsonField.getKey().toString(), value, operation));
-//
+//                specification = specification.and(createSpecification(jsonField.getKey().toString(), value, operation));
+                specification = createSpecification(jsonField.getKey().toString(), value, operation);
             }
         }
 
@@ -304,8 +313,8 @@ public abstract class CommonBaseServiceImpl<T extends CommonModel, ID extends Se
     protected Specification<T> createDeleteStatusAndUuidSpecification(String uuid) {
         return (root, query, criteriaBuilder) -> {
             Predicate predicateForId = criteriaBuilder.and(criteriaBuilder.equal(root.get("uuid"), uuid));
-            Predicate predicateStatusDelete = getDeleteStatusPredicate(root, criteriaBuilder);
-            return criteriaBuilder.and(predicateForId, predicateStatusDelete);
+//            Predicate predicateStatusDelete = getDeleteStatusPredicate(root, criteriaBuilder);
+            return criteriaBuilder.and(predicateForId);
         };
     }
 

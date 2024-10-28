@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Setter
 @Getter
 @Entity
@@ -27,7 +29,9 @@ public class CriteriaEntity extends CommonModel {
     @JoinColumn(name = "parent_id", insertable = false, updatable = false)
     private CriteriaEntity criteriaParent;
 
-
+    @OneToMany
+    @JoinColumn(name = "parent_id") // we need to duplicate the physical information
+    private Set<CriteriaEntity> children;
 
 
 }
