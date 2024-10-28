@@ -46,6 +46,13 @@ public class CriteriaController {
         return DefaultPageResponse.ok(pagedData.getContent(), pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
     }
 
+    @PostMapping("/paged/child")
+    public DefaultPageResponse<List<CriteriaDto>> getPagedChildCriteria(@RequestBody PageableRequest<CriteriaDto> request) {
+        Page<CriteriaDto> pagedData = criteriaService.findPagesChild(request);
+
+        return DefaultPageResponse.ok(pagedData.getContent(), pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
+    }
+
     @PostMapping()
     public DefaultResponse<String> save(@RequestBody CriteriaDto criteriaDto) {
 //        CategoryJournalDto categoryJournalDto = categoryJournalService.findByUuid(journalDto.getCategoryJournal().getUuid());

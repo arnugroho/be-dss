@@ -4,9 +4,6 @@ import com.arnugroho.be_dss.model.common.CommonDto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.Set;
-
 @Setter
 @Getter
 public class CriteriaDto extends CommonDto<Long> {

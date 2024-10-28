@@ -9,5 +9,7 @@ import org.springframework.data.domain.Page;
 
 public interface CriteriaService extends CommonBaseService<CriteriaEntity, Long, CriteriaDto> {
     Page<CriteriaTreeDto> findPagesTree(PageableRequest<CriteriaTreeDto> request);
+    Page<CriteriaDto> findPagesChild(PageableRequest<CriteriaDto> request);
+
 
 }

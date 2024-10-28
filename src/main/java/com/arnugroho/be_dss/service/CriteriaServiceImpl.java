@@ -29,18 +29,30 @@ import java.util.stream.Collectors;
 public class CriteriaServiceImpl extends CommonBaseServiceImpl<CriteriaEntity, Long, CriteriaDto> implements CriteriaService {
     final CriteriaTreeMapper criteriaTreeMapper;
     final CriteriaRepository repository;
+    final CriteriaMapper mapper;
 
     public CriteriaServiceImpl(CriteriaRepository repository, CriteriaMapper mapper, CriteriaTreeMapper criteriaTreeMapper) {
         super(repository, mapper);
         this.criteriaTreeMapper = criteriaTreeMapper;
         this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Override
     public Page<CriteriaTreeDto> findPagesTree(PageableRequest<CriteriaTreeDto> request) {
         Pageable pageable = PageableUtil.createPageableRequest(request);
         Specification<CriteriaEntity> specification = createDeleteStatusSpecification();
-        specification = specification.and((root, query, criteriaBuilder) -> criteriaBuilder.isNull(root.get(CriteriaEntity_.CRITERIA_PARENT)));
+        specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.isNull(root.get(CriteriaEntity_.CRITERIA_PARENT)
+        ));
+//        specification = specification.and((root, query, criteriaBuilder) ->
+//                {
+//                    Join<CriteriaEntity, CriteriaEntity> childrenJoin = root.join("children", JoinType.INNER);
+//
+//                    return criteriaBuilder.and(criteriaBuilder.isNull(root.get(CriteriaEntity_.CRITERIA_PARENT))
+//                            , criteriaBuilder.isFalse(childrenJoin.get(CommonModel_.statusDelete)));
+//                }
+//        );
         Page<CriteriaEntity> productEntityPage;
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -82,6 +94,55 @@ public class CriteriaServiceImpl extends CommonBaseServiceImpl<CriteriaEntity, L
 
 
         return new PageImpl<>(productEntityPage.getContent().stream().map(criteriaTreeMapper::toDto).collect(Collectors.toList()), pageable, productEntityPage.getTotalElements());
+
+    }
+
+    @Override
+    public Page<CriteriaDto> findPagesChild(PageableRequest<CriteriaDto> request) {
+        Pageable pageable = PageableUtil.createPageableRequest(request);
+        Specification<CriteriaEntity> specification = createDeleteStatusSpecification();
+        specification = specification.and((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(CriteriaEntity_.HAS_CHILD), "TIDAK"));
+        Page<CriteriaEntity> productEntityPage;
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        CriteriaEntity entity = mapper.fromDto(request.getFilter());
+        JsonNode filter = objectMapper.valueToTree(entity);
+
+        ((ObjectNode) filter).remove("statusDelete");
+
+        Iterator<Map.Entry<String, JsonNode>> fields = filter.fields();
+
+        String operation = LIKE;
+        Object value;
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> jsonField = fields.next();
+            if (!jsonField.getValue().isObject()) {
+                if (jsonField.getKey().equalsIgnoreCase(CommonModel_.ID)) {
+                    operation = EQUALS;
+                    value = jsonField.getValue().longValue();
+
+                    // Convert long column to string for pattern matching
+//                        Expression<String> castedColumn = criteriaBuilder.function("CAST", String.class, joinEntityB.get("longColumn"), criteriaBuilder.literal(String.class));
+
+                } else if (jsonField.getValue().isNumber()) {
+                    operation = EQUALS;
+                    value = jsonField.getValue().longValue();
+                } else {
+                    operation = LIKE;
+                    value = jsonField.getValue().asText();
+                }
+
+                specification = specification.and(createSpecification(jsonField.getKey().toString(), value, operation));
+//
+            }
+        }
+
+        productEntityPage = repository.findAll(specification, pageable);
+
+
+        return new PageImpl<>(productEntityPage.getContent().stream().map(mapper::toDto).collect(Collectors.toList()), pageable, productEntityPage.getTotalElements());
 
     }
 }
