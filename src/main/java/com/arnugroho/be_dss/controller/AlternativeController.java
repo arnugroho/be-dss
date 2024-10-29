@@ -44,8 +44,9 @@ public class AlternativeController {
     }
 
     @PutMapping()
-    public DefaultResponse<String> update(@RequestBody AlternativeDto alternativeDto) {
-        alternativeDto.setStatusDelete(!alternativeDto.isStatusDelete());
+    public DefaultResponse<String> update(@RequestBody JsonNode dto) {
+        AlternativeDto alternativeDto = new AlternativeDto();
+        alternativeDto.setDataValue(dto);
         alternativeService.update(alternativeDto);
         return DefaultResponse.ok();
     }

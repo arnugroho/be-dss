@@ -42,6 +42,25 @@ public class AlternativeServiceImpl extends CommonBaseServiceImpl<AlternativeEnt
     }
 
     @Override
+    public void update(AlternativeDto param) {
+        if(param.getDataValue().has("statusDelete")) {
+            boolean statusDelete = param.getDataValue().get("statusDelete").asBoolean();
+            param.setStatusDelete(!statusDelete);
+        }
+
+        String alternativeName = param.getDataValue().get("alternativeName").asText();
+        param.setAlternativeName(alternativeName);
+
+        String description = param.getDataValue().has("description")? param.getDataValue().get("description").asText() : "";
+        param.setDescription(description);
+
+        String uuid = param.getDataValue().has("uuid")? param.getDataValue().get("uuid").asText() : "";
+        param.setUuid(uuid);
+
+        super.update(param);
+    }
+
+    @Override
     public Specification<AlternativeEntity> extraSpecification(JsonNode filter) {
         Specification<AlternativeEntity> specification = createDeleteStatusSpecification();
         if (!filter.isEmpty()) {
