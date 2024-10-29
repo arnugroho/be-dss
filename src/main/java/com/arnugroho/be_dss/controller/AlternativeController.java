@@ -58,10 +58,9 @@ public class AlternativeController {
     }
 
     @GetMapping("/uuid/{uuid}")
-    public DefaultResponse<AlternativeDto> getByUuid(@PathVariable String uuid) {
+    public DefaultResponse<JsonNode> getByUuid(@PathVariable String uuid) {
         AlternativeDto dto = alternativeService.findByUuid(uuid);
-        dto.setStatusDelete(!dto.isStatusDelete());
-        return DefaultResponse.ok(dto);
+        return DefaultResponse.ok(assemblyMapping(dto));
     }
 
     @DeleteMapping("/uuid/{uuid}")
