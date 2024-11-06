@@ -82,4 +82,10 @@ public class AlternativeServiceImpl extends CommonBaseServiceImpl<AlternativeEnt
         }
         return specification;
     }
+
+    @Override
+    public void delete(AlternativeDto param) {
+        param.setStatusDelete(!param.isStatusDelete());
+        super.update(param);
+    }
 }

@@ -4,6 +4,7 @@ import com.arnugroho.be_dss.mapper.CriteriaMapper;
 import com.arnugroho.be_dss.model.common.DefaultPageResponse;
 import com.arnugroho.be_dss.model.common.DefaultResponse;
 import com.arnugroho.be_dss.model.common.PageableRequest;
+import com.arnugroho.be_dss.model.dto.CriteriaAllTreeDto;
 import com.arnugroho.be_dss.model.dto.CriteriaDto;
 import com.arnugroho.be_dss.model.dto.CriteriaTreeDto;
 import com.arnugroho.be_dss.model.entity.CriteriaEntity;
@@ -42,6 +43,13 @@ public class CriteriaController {
     @PostMapping("/paged/tree")
     public DefaultPageResponse<List<CriteriaTreeDto>> getPagedTree(@RequestBody PageableRequest<CriteriaTreeDto> request) {
         Page<CriteriaTreeDto> pagedData = criteriaService.findPagesTree(request);
+
+        return DefaultPageResponse.ok(pagedData.getContent(), pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
+    }
+
+    @PostMapping("/paged/all/tree")
+    public DefaultPageResponse<List<CriteriaAllTreeDto>> getPagedCriteriaTree(@RequestBody PageableRequest<CriteriaAllTreeDto> request) {
+        Page<CriteriaAllTreeDto> pagedData = criteriaService.findPagesCriteriaTree(request);
 
         return DefaultPageResponse.ok(pagedData.getContent(), pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
     }
