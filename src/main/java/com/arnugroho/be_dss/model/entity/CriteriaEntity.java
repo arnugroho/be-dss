@@ -33,6 +33,7 @@ public class CriteriaEntity extends CommonModel {
 
     @OneToMany
     @JoinColumn(name = "parent_id") // we need to duplicate the physical information
+    @OrderBy("id ASC")
     private Set<CriteriaEntity> children;
 
 
