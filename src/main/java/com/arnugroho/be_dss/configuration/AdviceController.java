@@ -88,7 +88,7 @@ public class AdviceController {
     @ExceptionHandler(CommonException.class)
     public @ResponseBody
     DefaultResponse<String> handleCommonException(WebRequest request, CommonException e) {
-        writeWarnLog(request, e);
+//        writeWarnLog(request, e);
         return DefaultResponse.error(e.getMessage());
     }
 

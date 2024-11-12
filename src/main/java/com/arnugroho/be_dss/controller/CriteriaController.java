@@ -1,5 +1,6 @@
 package com.arnugroho.be_dss.controller;
 
+import com.arnugroho.be_dss.configuration.CommonException;
 import com.arnugroho.be_dss.mapper.CriteriaMapper;
 import com.arnugroho.be_dss.model.common.DefaultPageResponse;
 import com.arnugroho.be_dss.model.common.DefaultResponse;
@@ -8,6 +9,7 @@ import com.arnugroho.be_dss.model.dto.CriteriaAllTreeDto;
 import com.arnugroho.be_dss.model.dto.CriteriaDto;
 import com.arnugroho.be_dss.model.dto.CriteriaTreeDto;
 import com.arnugroho.be_dss.model.entity.CriteriaEntity;
+import com.arnugroho.be_dss.model.projection.SumWeightProjection;
 import com.arnugroho.be_dss.repository.CriteriaRepository;
 import com.arnugroho.be_dss.service.CriteriaService;
 import com.arnugroho.be_dss.utils.PageableUtil;
@@ -63,9 +65,8 @@ public class CriteriaController {
 
     @PostMapping()
     public DefaultResponse<String> save(@RequestBody CriteriaDto criteriaDto) {
-//        CategoryJournalDto categoryJournalDto = categoryJournalService.findByUuid(journalDto.getCategoryJournal().getUuid());
-//        journalDto.setCategoryJournalId(categoryJournalDto.getId());
-//        journalDto.setCategoryJournal(categoryJournalDto);
+        //cek sum weight
+        cekSumWeightAll(criteriaDto);
         criteriaDto.setStatusDelete(!criteriaDto.isStatusDelete());
         criteriaService.save(criteriaDto);
         return DefaultResponse.ok();
@@ -73,6 +74,8 @@ public class CriteriaController {
 
     @PutMapping()
     public DefaultResponse<String> update(@RequestBody CriteriaDto criteriaDto) {
+        //cek sum weight
+        cekSumWeightAll(criteriaDto);
         criteriaDto.setStatusDelete(!criteriaDto.isStatusDelete());
         criteriaService.update(criteriaDto);
         return DefaultResponse.ok();
@@ -93,7 +96,10 @@ public class CriteriaController {
 
     @DeleteMapping("/uuid/{uuid}")
     public DefaultResponse<String> deleteByUuid(@PathVariable String uuid) {
-        criteriaService.delete(criteriaService.findByUuid(uuid));
+        CriteriaDto dto = criteriaService.findByUuid(uuid);
+        if (dto.getHasChild().equalsIgnoreCase("TIDAK")) {
+            criteriaService.delete(dto);
+        }
         return DefaultResponse.ok(uuid);
     }
 
@@ -105,4 +111,65 @@ public class CriteriaController {
         return DefaultPageResponse.ok(criteriaDtoList, pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
     }
 
+    @GetMapping("/sumweight")
+    public DefaultResponse<List<SumWeightProjection>> getSumWeight() {
+        return DefaultResponse.ok(criteriaRepository.sumWeight());
+    }
+
+    @GetMapping("/sumweight/all")
+    public DefaultResponse<Double> getSumWeightAll() {
+        return DefaultResponse.ok(criteriaRepository.sumWeightAll());
+    }
+
+
+    public void cekSumWeightAll(CriteriaDto criteriaDto) {
+        try {
+            CriteriaDto currentCriteriaDto = criteriaService.findById(criteriaDto.getId());
+
+            List<SumWeightProjection> sumWeightProjections = criteriaRepository.sumWeight();
+            sumWeightProjections.forEach(sumWeightProjection -> {
+                //cek yg parent utama
+                if (criteriaDto.getCriteriaParentId() == null && sumWeightProjection.getParentid() == null) {
+                    if (sumWeightProjection.getSumweight() + criteriaDto.getCriteriaWeight() - currentCriteriaDto.getCriteriaWeight() > 100) {
+                        throw new CommonException("Bobot lebih dari 100%");
+                    }
+                }
+                // carii parent yang sesuai
+                else if ( (sumWeightProjection.getParentid() == null ? 0D : Long.valueOf(sumWeightProjection.getParentid())) == (criteriaDto.getCriteriaParentId() == null ? 0D : criteriaDto.getCriteriaParentId())) {
+                    // jumlah sekarang > jumlah dari parent
+                    CriteriaDto parentCriteriaDto = new CriteriaDto();
+                    if (criteriaDto.getCriteriaParentId() != null) {
+                        parentCriteriaDto = criteriaService.findById(criteriaDto.getCriteriaParentId());
+                    }
+                    if (sumWeightProjection.getSumweight() + criteriaDto.getCriteriaWeight() - currentCriteriaDto.getCriteriaWeight() > parentCriteriaDto.getCriteriaWeight()) {
+                        throw new CommonException("Maksimal Bobot dari parent " + parentCriteriaDto.getCriteriaName() + " Adalah : " + parentCriteriaDto.getCriteriaWeight() + "%");
+                    }
+                }
+            });
+        } catch (Exception e) {
+
+            List<SumWeightProjection> sumWeightProjections = criteriaRepository.sumWeight();
+            sumWeightProjections.forEach(sumWeightProjection -> {
+                //cek yg parent utama
+                if (criteriaDto.getCriteriaParentId() == null && sumWeightProjection.getParentid() == null) {
+                    if (sumWeightProjection.getSumweight() + criteriaDto.getCriteriaWeight() > 100) {
+                        throw new CommonException("Bobot lebih dari 100%");
+                    }
+                }
+                // carii parent yang sesuai
+                else if ( (sumWeightProjection.getParentid() == null ? 0D : Long.valueOf(sumWeightProjection.getParentid())) == (criteriaDto.getCriteriaParentId() == null ? 0D : criteriaDto.getCriteriaParentId())) {
+                    // jumlah sekarang > jumlah dari parent
+                    CriteriaDto parentCriteriaDto = new CriteriaDto();
+                    if (criteriaDto.getCriteriaParentId() != null) {
+                        parentCriteriaDto = criteriaService.findById(criteriaDto.getCriteriaParentId());
+                    }
+                    if (sumWeightProjection.getSumweight() + criteriaDto.getCriteriaWeight() > parentCriteriaDto.getCriteriaWeight()) {
+                        throw new CommonException("Maksimal Bobot dari parent " + parentCriteriaDto.getCriteriaName() + " Adalah : " + parentCriteriaDto.getCriteriaWeight() + "%");
+                    }
+                }
+            });
+        }
+
+
+    }
 }
