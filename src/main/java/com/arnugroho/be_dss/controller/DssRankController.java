@@ -1,10 +1,12 @@
 package com.arnugroho.be_dss.controller;
 
+import com.arnugroho.be_dss.configuration.CommonException;
 import com.arnugroho.be_dss.model.common.DefaultPageResponse;
 import com.arnugroho.be_dss.model.common.PageableRequest;
 import com.arnugroho.be_dss.model.entity.SawRankEntity;
 import com.arnugroho.be_dss.model.entity.TopsisRankEntity;
 import com.arnugroho.be_dss.model.entity.WpRankEntity;
+import com.arnugroho.be_dss.repository.CriteriaRepository;
 import com.arnugroho.be_dss.repository.SawRankRepository;
 import com.arnugroho.be_dss.repository.TopsisRankRepository;
 import com.arnugroho.be_dss.repository.WpRankRepository;
@@ -23,17 +25,22 @@ public class DssRankController {
     private final SawRankRepository sawRankRepository;
     private final WpRankRepository wpRankRepository;
     private final TopsisRankRepository topsisRankRepository;
+    private final CriteriaRepository criteriaRepository;
 
-    public DssRankController(SawRankRepository sawRankRepository, WpRankRepository wpRankRepository, TopsisRankRepository topsisRankRepository) {
+    public DssRankController(SawRankRepository sawRankRepository, WpRankRepository wpRankRepository, TopsisRankRepository topsisRankRepository, CriteriaRepository criteriaRepository) {
         this.sawRankRepository = sawRankRepository;
         this.wpRankRepository = wpRankRepository;
         this.topsisRankRepository = topsisRankRepository;
+        this.criteriaRepository = criteriaRepository;
     }
 
 
     @PostMapping("/paged/saw")
     public DefaultPageResponse<List<SawRankEntity>> getPagedSaw(@RequestBody PageableRequest<JsonNode> request) {
-
+        Double bobot = criteriaRepository.sumWeightAll();
+        if (bobot != 100){
+            throw new CommonException("Bobot != 100");
+        }
         if (request.getSort()== null){
             request.setSort("rank");
             request.setIsSortAsc(Boolean.TRUE);
@@ -45,7 +52,10 @@ public class DssRankController {
     }
     @PostMapping("/paged/wp")
     public DefaultPageResponse<List<WpRankEntity>> getPagedWp(@RequestBody PageableRequest<JsonNode> request) {
-
+        Double bobot = criteriaRepository.sumWeightAll();
+        if (bobot != 100){
+            throw new CommonException("Bobot != 100");
+        }
         if (request.getSort()== null){
             request.setSort("rank");
             request.setIsSortAsc(Boolean.TRUE);
@@ -57,7 +67,10 @@ public class DssRankController {
     }
     @PostMapping("/paged/topsis")
     public DefaultPageResponse<List<TopsisRankEntity>> getPagedTopsis(@RequestBody PageableRequest<JsonNode> request) {
-
+        Double bobot = criteriaRepository.sumWeightAll();
+        if (bobot != 100){
+            throw new CommonException("Bobot != 100");
+        }
         if (request.getSort()== null){
             request.setSort("rank");
             request.setIsSortAsc(Boolean.TRUE);
