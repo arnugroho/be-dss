@@ -90,11 +90,12 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth ->
           auth
-//                  .requestMatchers(HttpMethod.POST,"/api/auth/signin").permitAll()
-//                  .requestMatchers(HttpMethod.POST,"/api/auth/signup").permitAll()
+                  .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                  .requestMatchers(HttpMethod.POST,"/api/auth/signin").permitAll()
+                  .requestMatchers(HttpMethod.POST,"/api/auth/signup").permitAll()
 //              .requestMatchers("/api/test/**").permitAll()
-//              .anyRequest().authenticated()
-                  .anyRequest().permitAll()
+              .anyRequest().authenticated()
+//                  .anyRequest().permitAll()
         );
 
     http.authenticationProvider(authenticationProvider());

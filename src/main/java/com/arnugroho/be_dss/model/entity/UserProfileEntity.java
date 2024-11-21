@@ -15,6 +15,11 @@ public class UserProfileEntity extends CommonModel {
     @ManyToOne
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private UserEntity user;
+    @Column(name = "profile_id")
+    private Long profileId;
+    @ManyToOne
+    @JoinColumn(name = "profile_id", insertable = false, updatable = false)
+    private ProfileEntity profile;
 
 
 }
