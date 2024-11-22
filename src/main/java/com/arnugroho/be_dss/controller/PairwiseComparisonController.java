@@ -2,8 +2,12 @@ package com.arnugroho.be_dss.controller;
 
 import com.arnugroho.be_dss.model.common.DefaultResponse;
 import com.arnugroho.be_dss.model.dto.PairwiseComparisonDto;
+import com.arnugroho.be_dss.model.entity.PairwiseComparisonEntity;
 import com.arnugroho.be_dss.repository.PairwiseComparisonRepository;
+import com.arnugroho.be_dss.service.PairwiseComparationService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 
 @RestController
@@ -11,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class PairwiseComparisonController {
 
     private final PairwiseComparisonRepository pairwiseComparisonRepository;
+    private final PairwiseComparationService pairwiseComparationService;
 
-    public PairwiseComparisonController(PairwiseComparisonRepository pairwiseComparisonRepository) {
+    public PairwiseComparisonController(PairwiseComparisonRepository pairwiseComparisonRepository, PairwiseComparationService pairwiseComparationService) {
         this.pairwiseComparisonRepository = pairwiseComparisonRepository;
+        this.pairwiseComparationService = pairwiseComparationService;
     }
 
 //    @PostMapping("/paged")
@@ -24,19 +30,28 @@ public class PairwiseComparisonController {
 //        return DefaultPageResponse.ok(result, pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
 //    }
 
-    @PostMapping()
-    public DefaultResponse<String> save(@RequestBody PairwiseComparisonDto dto) {
-
-        return DefaultResponse.ok();
-    }
-
-//    @PutMapping()
-//    public DefaultResponse<String> update(@RequestBody JsonNode dto) {
-//        AlternativeDto alternativeDto = new AlternativeDto();
-//        alternativeDto.setDataValue(dto);
-//        alternativeService.update(alternativeDto);
+//    @PostMapping()
+//    public DefaultResponse<String> save(@RequestBody PairwiseComparisonDto dto) {
+//
 //        return DefaultResponse.ok();
 //    }
+
+    @PutMapping()
+    public DefaultResponse<String> update(@RequestBody PairwiseComparisonDto dto) {
+        dto.setCriteria1Id(dto.getCriteria1().getId());
+        dto.setCriteria2Id(dto.getCriteria2().getId());
+        Optional<PairwiseComparisonEntity> optional = pairwiseComparisonRepository.findByCriteria1IdAndCriteria2Id(dto.getCriteria1Id(), dto.getCriteria2Id());
+
+        if (optional.isEmpty()) {
+            pairwiseComparationService.save(dto);
+        } else {
+            PairwiseComparisonEntity pairwiseComparisonEntity = optional.get();
+            dto.setId(pairwiseComparisonEntity.getId());
+            dto.setUuid(pairwiseComparisonEntity.getUuid());
+            pairwiseComparationService.update(dto);
+        }
+        return DefaultResponse.ok();
+    }
 //
 //    @GetMapping("/{id}")
 //    public DefaultResponse<AlternativeDto> getById(@PathVariable Long id) {
