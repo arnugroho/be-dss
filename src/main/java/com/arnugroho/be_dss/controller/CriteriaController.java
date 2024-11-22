@@ -103,6 +103,16 @@ public class CriteriaController {
         return DefaultResponse.ok(uuid);
     }
 
+    @DeleteMapping("/ahp/uuid/{uuid}")
+    public DefaultResponse<String> deleteAhpByUuid(@PathVariable String uuid) {
+        CriteriaDto dto = criteriaService.findByUuid(uuid);
+        dto.setIsAhp(!((dto.getIsAhp() == null) ? Boolean.FALSE : dto.getIsAhp()));
+        if (dto.getHasChild().equalsIgnoreCase("TIDAK")) {
+            criteriaService.update(dto);
+        }
+        return DefaultResponse.ok(uuid);
+    }
+
     @PostMapping("/paged/parent")
     public DefaultPageResponse<List<CriteriaDto>> getPagedParent(@RequestBody PageableRequest<CriteriaDto> request) {
         Pageable pageable = PageableUtil.createPageableRequest(request);

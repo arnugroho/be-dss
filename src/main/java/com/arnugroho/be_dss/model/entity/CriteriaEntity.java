@@ -36,5 +36,8 @@ public class CriteriaEntity extends CommonModel {
     @OrderBy("id ASC")
     private Set<CriteriaEntity> children;
 
+    @Column(name = "is_ahp")
+    private Boolean isAhp;
+
 
 }
