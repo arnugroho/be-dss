@@ -26,5 +26,5 @@ public class PairwiseComparisonEntity extends CommonModel {
     private Long criteria2Id;
 
     @Column(nullable = false)
-    private double score;
+    private Double score;
 }

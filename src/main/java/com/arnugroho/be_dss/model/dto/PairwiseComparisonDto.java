@@ -11,5 +11,5 @@ public class PairwiseComparisonDto extends CommonDto<Long> {
     private Long criteria2Id;
     private CriteriaDto criteria1;
     private CriteriaDto criteria2;
-    private double score;
+    private Double score;
 }

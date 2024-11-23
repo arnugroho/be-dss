@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface CriteriaRepository extends CommonRepository<CriteriaEntity, Long> {
     Page<CriteriaEntity> findAllByHasChildAndStatusDeleteFalse(String hasChild, Pageable pageable);
+    List<CriteriaEntity> findAllByHasChildAndStatusDeleteFalse(String hasChild);
 
     @Query(value = "select ct.parent_id parentId, c.criteria_name parentName, sum(ct.criteria_weight) sumWeight from criteria ct " +
             "left join criteria c on c.id = ct.parent_id " +
@@ -21,4 +22,6 @@ public interface CriteriaRepository extends CommonRepository<CriteriaEntity, Lon
     @Query(value = "select sum(ct.criteria_weight) from criteria ct " +
             "where ct.has_child = 'TIDAK' and ct.status_delete is false ", nativeQuery = true)
     Double sumWeightAll();
+
+    List<CriteriaEntity> findByCriteriaParentId(Long parentId);
 }

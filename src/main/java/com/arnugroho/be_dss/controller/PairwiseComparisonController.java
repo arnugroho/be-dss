@@ -1,12 +1,16 @@
 package com.arnugroho.be_dss.controller;
 
+import com.arnugroho.be_dss.model.common.DefaultPageResponse;
 import com.arnugroho.be_dss.model.common.DefaultResponse;
+import com.arnugroho.be_dss.model.common.PageableRequest;
 import com.arnugroho.be_dss.model.dto.PairwiseComparisonDto;
 import com.arnugroho.be_dss.model.entity.PairwiseComparisonEntity;
 import com.arnugroho.be_dss.repository.PairwiseComparisonRepository;
 import com.arnugroho.be_dss.service.PairwiseComparationService;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -22,19 +26,19 @@ public class PairwiseComparisonController {
         this.pairwiseComparationService = pairwiseComparationService;
     }
 
-//    @PostMapping("/paged")
-//    public DefaultPageResponse<List<JsonNode>> getPaged(@RequestBody PageableRequest<AlternativeDto> request) {
-//        Page<AlternativeDto> pagedData = alternativeService.findPages(request);
-//        List<JsonNode> result = pagedData.getContent().stream().map(PairwiseComparisonController::assemblyMapping).collect(Collectors.toList());
-//
-//        return DefaultPageResponse.ok(result, pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
-//    }
+    @PostMapping("/paged")
+    public DefaultPageResponse<List<PairwiseComparisonDto>> getPaged(@RequestBody PageableRequest<PairwiseComparisonDto> request) {
+       Page<PairwiseComparisonDto> pagedData = pairwiseComparationService.findPages(request);
+        List<PairwiseComparisonDto> result = pagedData.getContent();//.stream().map(PairwiseComparisonController::assemblyMapping).collect(Collectors.toList());
 
-//    @PostMapping()
-//    public DefaultResponse<String> save(@RequestBody PairwiseComparisonDto dto) {
-//
-//        return DefaultResponse.ok();
-//    }
+        return DefaultPageResponse.ok(result, pagedData.getNumber() + 1, pagedData.getSize(), pagedData.getTotalElements());
+    }
+
+    @PostMapping()
+    public DefaultResponse<String> save(@RequestBody PairwiseComparisonDto dto) {
+
+        return DefaultResponse.ok();
+    }
 
     @PutMapping()
     public DefaultResponse<String> update(@RequestBody PairwiseComparisonDto dto) {
