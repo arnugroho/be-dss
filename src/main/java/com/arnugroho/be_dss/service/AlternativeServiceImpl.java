@@ -6,8 +6,10 @@ import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 import com.arnugroho.be_dss.mapper.AlternativeMapper;
 import com.arnugroho.be_dss.model.dto.AlternativeDto;
+import com.arnugroho.be_dss.model.dto.PredictiveDto;
 import com.arnugroho.be_dss.model.entity.AlternativeEntity;
 import com.arnugroho.be_dss.model.entity.AlternativeEntity_;
+import com.arnugroho.be_dss.model.entity.PredictiveEntity;
 import com.arnugroho.be_dss.repository.AlternativeRepository;
 import com.arnugroho.be_dss.service.common.CommonBaseServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,10 +21,12 @@ import java.util.*;
 @Service
 public class AlternativeServiceImpl extends CommonBaseServiceImpl<AlternativeEntity, Long, AlternativeDto> implements AlternativeService {
 
+    private final PredictiveService predictiveService;
 
-    public AlternativeServiceImpl(AlternativeRepository repository, AlternativeMapper mapper) {
+    public AlternativeServiceImpl(AlternativeRepository repository, AlternativeMapper mapper, PredictiveService predictiveService) {
         super(repository, mapper);
 
+        this.predictiveService = predictiveService;
     }
 
     @Override
@@ -41,9 +45,16 @@ public class AlternativeServiceImpl extends CommonBaseServiceImpl<AlternativeEnt
         String description = param.getDataValue().has("description")? param.getDataValue().get("description").asText() : "";
         param.setDescription(description);
 
-        calculatePredictive(param.getDataValue());
+        AlternativeEntity alternative = super.save(param);
 
-        return super.save(param);
+        Float hasilPredictive = calculatePredictive(param.getDataValue());
+        PredictiveDto predictiveDto = new PredictiveDto();
+        predictiveDto.setAlternativeId(alternative.getId());
+        predictiveDto.setHasil(hasilPredictive);
+
+        predictiveService.save(predictiveDto);
+
+        return alternative;
     }
 
     @Override
@@ -62,7 +73,27 @@ public class AlternativeServiceImpl extends CommonBaseServiceImpl<AlternativeEnt
         String uuid = param.getDataValue().has("uuid")? param.getDataValue().get("uuid").asText() : "";
         param.setUuid(uuid);
 
-        calculatePredictive(param.getDataValue());
+        AlternativeDto alternative = findByUuid(uuid);
+        Optional<PredictiveEntity> cekDbPredictive = predictiveService.findByAlternativeId(alternative.getId());
+
+        if (cekDbPredictive.isPresent()) {
+
+            Float hasilPredictive = calculatePredictive(param.getDataValue());
+            PredictiveDto predictiveDto = new PredictiveDto();
+            predictiveDto.setAlternativeId(alternative.getId());
+            predictiveDto.setHasil(hasilPredictive);
+            predictiveDto.setId(cekDbPredictive.get().getId());
+
+            predictiveService.update(predictiveDto);
+        } else {
+
+            Float hasilPredictive = calculatePredictive(param.getDataValue());
+            PredictiveDto predictiveDto = new PredictiveDto();
+            predictiveDto.setAlternativeId(alternative.getId());
+            predictiveDto.setHasil(hasilPredictive);
+
+            predictiveService.save(predictiveDto);
+        }
 
         super.update(param);
     }
