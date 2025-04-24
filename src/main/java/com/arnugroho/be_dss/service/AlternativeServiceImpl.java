@@ -16,6 +16,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 @Service
@@ -160,8 +162,29 @@ public class AlternativeServiceImpl extends CommonBaseServiceImpl<AlternativeEnt
         float[] prediction;
 
 //        float[] inputData = new float[inputDataOrder.length];
+        byte[] modelBytes = new byte[0];
+        try (InputStream modelInputStream = getClass().getResourceAsStream("/random_forest_model.onnx");
+             OrtSession.SessionOptions options = new OrtSession.SessionOptions()) {
+
+            if (modelInputStream == null) {
+                throw new IOException("ONNX model file not found on classpath: /random_forest_model.onnx");
+            }
+
+            modelBytes = modelInputStream.readAllBytes();
+            // ONNX Runtime's createSession method can accept an InputStream
+//                OrtSession session = env.createSession(modelBytes, options);
+
+            // Use your session here...
+
+        } catch (IOException e) {
+            // Handle the exception (e.g., log it and exit)
+            e.printStackTrace();
+        }
+
         try (OrtEnvironment env = OrtEnvironment.getEnvironment();
-             OrtSession session = env.createSession("src/main/resources/random_forest_model.onnx", new OrtSession.SessionOptions())) {
+             OrtSession session = env.createSession(modelBytes, new OrtSession.SessionOptions())) {
+
+            
 
             OnnxTensor inputTensor = OnnxTensor.createTensor(env, new float[][]{inputData});
             OrtSession.Result result = session.run(Collections.singletonMap("float_input", inputTensor));
@@ -182,7 +205,12 @@ public class AlternativeServiceImpl extends CommonBaseServiceImpl<AlternativeEnt
         } catch (OrtException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(prediction[0]);
+
+
+        OrtEnvironment env = OrtEnvironment.getEnvironment();
+
+// Use getResourceAsStream to load the model from the classpath
+        
         return prediction[0];
     }
 }
